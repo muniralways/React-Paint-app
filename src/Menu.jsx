@@ -1,43 +1,30 @@
-import React from 'react'
+import React from 'react';
 
-const Menu = () => {
+const Menu = ({ setLineColor, setLineWidth, setLineOpacity }) => {
   return (
-   <>
-   
-   <div className="Menu">
-<label htmlFor="">Brush Color</label>
-<input type="color"
+    <>
+      <label>🎨 Brush Color</label>
+      <input type="color" onChange={(e) => setLineColor(e.target.value)} />
 
+      <label>🖋️ Brush Width</label>
+      <input
+        type="range"
+        min="3"
+        max="50"
+        defaultValue="5"
+        onChange={(e) => setLineWidth(e.target.value)}
+      />
 
+      <label>🌫️ Opacity</label>
+      <input
+        type="range"
+        min="10"
+        max="100"
+        defaultValue="100"
+        onChange={(e) => setLineOpacity(e.target.value / 100)}
+      />
+    </>
+  );
+};
 
-
-/>
-
-<label htmlFor="">Brush Width</label>
-<input type="range"
-
-min="3"
-
-max = "20"
-
-
-
-/>
-<label htmlFor="">Brush Opacity</label>
-<input type="range"
-
-min="1"
-
-max = "100"
-
-
-
-/>
-
-   </div>
-   
-   </>
-  )
-}
-
-export default Menu
+export default Menu;
