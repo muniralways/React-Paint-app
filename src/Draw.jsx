@@ -1,23 +1,23 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Menu from './Menu';
 
 const Draw = () => {
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
+  const lastPosRef = useRef({ x: 0, y: 0 });
 
   const [isDrawing, setIsDrawing] = useState(false);
-  const [lineWidth, setLineWidth] = useState(5);
-  const [lineColor, setLineColor] = useState('black');
-  const [lineOpacity, setLineOpacity] = useState(1);
+  const [lineWidth, setLineWidth] = useState(20);
+  const [lineColor, setLineColor] = useState('#ff0000');
+  const [lineOpacity, setLineOpacity] = useState(0.5);
   const [hasDrawing, setHasDrawing] = useState(false);
 
-  // 🖌️ ব্যাকগ্রাউন্ড নিয়ন্ত্রণ
   const [includeBg, setIncludeBg] = useState(true);
   const [bgColor, setBgColor] = useState('#ffffff');
 
   const [popup, setPopup] = useState(null);
 
-  // 🖍️ Initial setup + Update brush settings
+  // Canvas setup (only once)
   useEffect(() => {
     const canvas = canvasRef.current;
     canvas.width = 1000;
@@ -26,118 +26,131 @@ const Draw = () => {
     const ctx = canvas.getContext('2d');
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = lineColor;
-    ctx.lineWidth = lineWidth;
-    ctx.globalAlpha = lineOpacity;
     ctxRef.current = ctx;
 
-    // ব্যাকগ্রাউন্ড প্রয়োগ
     if (includeBg) {
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
-  }, [lineColor, lineWidth, lineOpacity, includeBg, bgColor]);
+  }, [lineWidth, lineColor, lineOpacity, includeBg, bgColor]);
 
-  // আঁকার শুরু
+  // Start drawing
   const startDrawing = (e) => {
+    const x = e.nativeEvent.offsetX;
+    const y = e.nativeEvent.offsetY;
     ctxRef.current.beginPath();
-    ctxRef.current.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+    ctxRef.current.moveTo(x, y);
+    lastPosRef.current = { x, y };
     setIsDrawing(true);
   };
 
-  // আঁকা শেষ
+  const draw = (e) => {
+    if (!isDrawing) return;
+
+    const x = e.nativeEvent.offsetX;
+    const y = e.nativeEvent.offsetY;
+    const last = lastPosRef.current;
+
+    // Set hasDrawing to true when drawing starts
+    setHasDrawing(true);
+
+    const ctx = ctxRef.current;
+    ctx.strokeStyle = `rgba(${parseInt(lineColor.slice(1, 3), 16)}, ${parseInt(lineColor.slice(3, 5), 16)}, ${parseInt(lineColor.slice(5, 7), 16)}, ${lineOpacity})`;
+    ctx.lineWidth = lineWidth;
+    ctx.globalAlpha = 1; // Reset globalAlpha for each stroke
+
+    // Smooth line
+    ctx.quadraticCurveTo(last.x, last.y, (last.x + x) / 2, (last.y + y) / 2);
+    ctx.stroke();
+
+    lastPosRef.current = { x, y };
+  };
+
+  // End drawing
   const endDrawing = () => {
     ctxRef.current.closePath();
     setIsDrawing(false);
-    setHasDrawing(true);
   };
 
-  // লাইন আঁকা
-  const draw = (e) => {
-    if (!isDrawing) return;
-    ctxRef.current.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-    ctxRef.current.stroke();
-  };
-
-  // Popup দেখানো
+  // Popup
   const showPopup = (msg) => {
     setPopup(msg);
     setTimeout(() => setPopup(null), 3000);
   };
 
-  // Export PNG
+  // Export drawing
   const saveDrawing = () => {
     if (!hasDrawing) {
-      showPopup('⚠️ আপনি কিছু আঁকেননি!');
+      showPopup('⚠️ You did not draw anything!');
       return;
     }
 
     const canvas = canvasRef.current;
-    if (includeBg) {
-      // রঙসহ ব্যাকগ্রাউন্ড প্রয়োগ
-      const ctx = ctxRef.current;
-      const temp = document.createElement('canvas');
-      temp.width = canvas.width;
-      temp.height = canvas.height;
-      const tempCtx = temp.getContext('2d');
+    const temp = document.createElement('canvas');
+    temp.width = canvas.width;
+    temp.height = canvas.height;
+    const tempCtx = temp.getContext('2d');
 
+    // Step 1: Draw the background if it's enabled
+    if (includeBg) {
       tempCtx.fillStyle = bgColor;
       tempCtx.fillRect(0, 0, temp.width, temp.height);
-      tempCtx.drawImage(canvas, 0, 0);
-
-      const link = document.createElement('a');
-      link.download = 'drawing_with_bg.png';
-      link.href = temp.toDataURL('image/png');
-      link.click();
-    } else {
-      const link = document.createElement('a');
-      link.download = 'drawing_transparent.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
     }
 
-    showPopup('✅ Export সফল হয়েছে!');
+    // Step 2: Draw the current canvas content (your drawings)
+    tempCtx.drawImage(canvas, 0, 0);
+
+    // Step 3: Export the drawing with or without background
+    const link = document.createElement('a');
+    link.download = includeBg ? 'drawing_with_bg.png' : 'drawing_transparent.png';
+    link.href = temp.toDataURL('image/png');
+    link.click();
+
+    showPopup('✅ Export successful!');
   };
 
-  // Clear Canvas
+  // Clear canvas
   const clearCanvas = () => {
     const canvas = canvasRef.current;
     const ctx = ctxRef.current;
+
+    // Clear only current content
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Redraw background manually if necessary
     if (includeBg) {
+      ctx.save();
+      ctx.globalAlpha = 1; // Ensure full opacity for background
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
     }
+
     setHasDrawing(false);
-    showPopup('🧽 ক্যানভাস পরিষ্কার হয়েছে!');
+    showPopup('🧽 Canvas cleared!');
   };
 
   return (
     <div className="App">
       {popup && <div className="popup">{popup}</div>}
-
+      <div className="title">🎨 Paint App</div>
       <div className="container">
-        
-      <h1>🎨 Paint App</h1>
-        {/* বাম পাশে ক্যানভাস */}
         <div className="draw-area">
           <canvas
             ref={canvasRef}
             onMouseDown={startDrawing}
             onMouseUp={endDrawing}
             onMouseMove={draw}
-            style={{ cursor: 'crosshair' }}
+            style={{ cursor: 'crosshair', border: '2px solid black' }}
           />
         </div>
 
-        {/* ডান পাশে মেনু */}
         <div className="menu-panel">
           <Menu
             setLineColor={setLineColor}
             setLineWidth={setLineWidth}
             setLineOpacity={setLineOpacity}
           />
-
           <div>
             <label>
               <input
@@ -145,13 +158,13 @@ const Draw = () => {
                 checked={includeBg}
                 onChange={(e) => setIncludeBg(e.target.checked)}
               />{' '}
-              ব্যাকগ্রাউন্ডসহ PNG
+              Background PNG
             </label>
           </div>
 
           {includeBg && (
             <div>
-              <label>🎨 ব্যাকগ্রাউন্ড কালার</label>
+              <label>🎨 Background color</label>
               <input
                 type="color"
                 value={bgColor}
