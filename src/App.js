@@ -1,14 +1,17 @@
 
-import './App.css';
-import Draw from './Draw';
-import Menu from './Menu';
 
+import Draw from './Draw';
+
+import './App.css';
+import './DeveloperInfo.css';
+import DeveloperInfo from './DeveloperInfo';
 function App() {
   return (
     <>
     
     
     <Draw/>
+    <DeveloperInfo/>
     </>
   );
 }

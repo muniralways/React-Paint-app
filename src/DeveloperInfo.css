@@ -1,0 +1,138 @@
+/* Floating Button */
+.dev-toggle-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #2563eb, #1e3a8a);
+  color: white;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 10px 14px;
+  border-radius: 2px;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.dev-toggle-btn:hover {
+  transform: translateY(-50%) scale(1.1);
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+}
+
+.dev-toggle-btn.right {
+  right: 15px;
+}
+
+.dev-toggle-btn.left {
+  left: 15px;
+}
+
+/* Side Panel */
+.dev-info-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 270px;
+  background: rgba(31, 41, 55, 0.85);
+  backdrop-filter: blur(8px);
+  color: white;
+  padding: 25px 20px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+  transform: translateX(100%);
+  transition: all 0.4s ease;
+  z-index: 9998;
+}
+
+.dev-info-panel.left {
+  left: 0;
+  transform: translateX(-100%);
+}
+
+.dev-info-panel.right {
+  right: 0;
+}
+
+.dev-info-panel.open.right {
+  transform: translateX(0);
+}
+
+.dev-info-panel.open.left {
+  transform: translateX(0);
+}
+
+/* Inside Panel */
+.dev-avatar {
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  border: 3px solid #3b82f6;
+  margin-bottom: 12px;
+}
+
+.dev-name {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.dev-bio {
+  font-size: 14px;
+  color: #d1d5db;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+/* Buttons inside panel */
+.dev-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.follow-btn,
+.source-btn {
+  display: inline-block;
+  text-align: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.follow-btn {
+  background: #1e40af;
+  color: white;
+}
+
+.follow-btn:hover {
+  background: #3b82f6;
+}
+
+.source-btn {
+  background: #111827;
+  border: 1px solid #3b82f6;
+  color: #93c5fd;
+}
+
+.source-btn:hover {
+  background: #1e293b;
+}
+
+/* Close Button */
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 22px;
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+  color: #f87171;
+}
